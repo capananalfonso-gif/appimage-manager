@@ -55,16 +55,17 @@ appimage-manager.py --apps-dir ~/Applications list  # Custom directory
 ## How it works
 
 ```
-1. SCAN      ~/apps/*.AppImage files
+1. SCAN      Detect *.AppImage files, group by name, pick latest version
                 |
-2. REGISTER   appimages.csv (id, label, filename, icon, categories, wm_class, status)
+2. REGISTER  Save to appimages.csv (id, label, filename, status)
                 |
-3. EXTRACT    Icons → ~/.local/share/icons/hicolor/ (XDG standard)
-              Categories + StartupWMClass → from embedded .desktop
+3. EXTRACT   From inside each AppImage, pull:
+             - Icon → install to ~/.local/share/icons/hicolor/
+             - Categories + StartupWMClass → update CSV
                 |
-4. SYNC       Symlinks + ~/.local/share/applications/appimage-*.desktop
+4. SYNC      Create symlinks + .desktop launchers from the enriched registry
                 |
-5. LAUNCHER   Apps appear in COSMIC / GNOME / KDE with proper icons + dock support
+5. LAUNCHER  Apps appear in COSMIC / GNOME / KDE with proper icons + dock support
 ```
 
 **Updating an app:** Drop the new `.AppImage` version, delete the old one. The script re-links automatically.
