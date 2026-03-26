@@ -10,11 +10,12 @@ Drop an AppImage into a directory, and it appears in your application launcher w
 - **Version-aware** — when multiple versions exist, the latest is linked (by version number, not file date)
 - **Symlinks** — creates clean, version-agnostic symlinks (e.g., `obsidian.AppImage` -> `Obsidian-1.9.10.AppImage`)
 - **Desktop launchers** — generates `.desktop` files so apps appear in COSMIC, GNOME, KDE, or any freedesktop-compliant launcher
-- **Icon extraction** — pulls icons from inside AppImages automatically
+- **Icon extraction** — pulls icons from inside AppImages and installs them to the XDG hicolor theme
 - **Category detection** — reads categories from the embedded `.desktop` file, tagged with `X-AppImage;` for easy filtering
+- **StartupWMClass** — extracted from AppImages so dock/panel icons match correctly
 - **systemd watcher** — optional file watcher auto-triggers on new/removed AppImages
 - **CSV registry** — single source of truth, user-editable labels and categories
-- **Soft delete** — removed apps stay in the registry as history, icons are never deleted
+- **Clean removal** — removed apps are cleaned up (symlink, .desktop, icon), but stay in the CSV as history
 
 ## Quick start
 
@@ -54,24 +55,25 @@ appimage-manager.py --apps-dir ~/Applications list  # Custom directory
 ## How it works
 
 ```
-1. SCAN     ~/apps/*.AppImage files
-               |
-2. REGISTER  appimages.csv (id, label, filename, icon, categories, status)
-               |
-3. EXTRACT   icons/ from AppImage internals + categories from embedded .desktop
-               |
-4. SYNC      symlinks + ~/.local/share/applications/appimage-*.desktop
-               |
-5. LAUNCHER  Apps appear in COSMIC / GNOME / KDE with proper icons
+1. SCAN      ~/apps/*.AppImage files
+                |
+2. REGISTER   appimages.csv (id, label, filename, icon, categories, wm_class, status)
+                |
+3. EXTRACT    Icons → ~/.local/share/icons/hicolor/ (XDG standard)
+              Categories + StartupWMClass → from embedded .desktop
+                |
+4. SYNC       Symlinks + ~/.local/share/applications/appimage-*.desktop
+                |
+5. LAUNCHER   Apps appear in COSMIC / GNOME / KDE with proper icons + dock support
 ```
 
 **Updating an app:** Drop the new `.AppImage` version, delete the old one. The script re-links automatically.
 
-**Removing an app:** Delete the `.AppImage` file. The script marks it as `removed`, cleans up the symlink and `.desktop` file. The icon and CSV entry are preserved.
+**Removing an app:** Delete the `.AppImage` file. The script marks it as `removed`, cleans up the symlink, `.desktop` file, and icon from the hicolor theme. The CSV entry is preserved as history.
 
 ## Configuration
 
-Edit the `CONFIG` section at the bottom of the script, or use CLI flags:
+Edit the `CONFIG` section in the script, or use CLI flags:
 
 | Setting | Default | CLI flag | Description |
 |---------|---------|----------|-------------|
@@ -79,8 +81,9 @@ Edit the `CONFIG` section at the bottom of the script, or use CLI flags:
 | `desktop_dir` | `~/.local/share/applications` | `--desktop-dir` | Where to write `.desktop` files |
 | `csv_file` | `appimages.csv` | `--csv` | Registry filename |
 | `desktop_prefix` | `appimage-` | — | Prefix for managed `.desktop` files |
-| `icons_dir` | `icons` | — | Icon storage (relative to apps_dir) |
 | `default_categories` | `Utility;X-AppImage;` | — | Default categories for new apps |
+
+Icons are installed to `~/.local/share/icons/hicolor/` following the [freedesktop Icon Theme Specification](https://specifications.freedesktop.org/icon-theme/latest/).
 
 ## Registry
 
@@ -89,8 +92,9 @@ The `appimages.csv` file is the single source of truth. User-editable columns:
 | Column | Purpose |
 |--------|---------|
 | `label` | Display name in launcher |
-| `icon` | Icon name or path |
+| `icon` | Icon theme name (e.g., `appimage-obsidian`) |
 | `categories` | `.desktop` categories (e.g., `Graphics;`, `Development;`) |
+| `startup_wm_class` | Window class for dock/panel matching |
 | `terminal` | `true` / `false` — launch in terminal |
 | `status` | `active` / `ignored` / `removed` |
 
@@ -98,11 +102,11 @@ After editing the CSV, run `./appimage-manager.py sync` to apply changes.
 
 ### States
 
-| Status | Symlink | .desktop | CSV row | Icon |
-|--------|---------|----------|---------|------|
-| `active` | created | created | kept | kept |
-| `ignored` | removed | removed | kept | kept |
-| `removed` | removed | removed | kept | kept |
+| Status | Symlink | .desktop | Icon (hicolor) | CSV row |
+|--------|---------|----------|----------------|---------|
+| `active` | created | created | installed | kept |
+| `ignored` | removed | removed | removed | kept |
+| `removed` | removed | removed | removed | kept |
 
 ## systemd watcher
 
@@ -124,7 +128,7 @@ To update after editing the CSV: run `./appimage-manager.py sync` manually (CSV 
 | Gear Lever | Active | Flatpak, GTK4 | GUI app, requires Flatpak |
 | AM / AppMan | Active | Bash, curl | Package manager (download + install) |
 
-This tool does one thing well: make your existing AppImages visible in the launcher. No daemon, no GUI, no package management. One file, zero dependencies.
+This tool does one thing well: make your existing AppImages visible in the launcher and dock. No daemon, no GUI, no package management. One file, zero dependencies.
 
 ## Requirements
 
