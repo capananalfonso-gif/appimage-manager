@@ -4,6 +4,8 @@ Automatic symlink, launcher, and icon management for AppImages on Linux.
 
 Drop an AppImage into a directory, and it appears in your application launcher with the correct icon and category — automatically.
 
+[![demo](https://asciinema.org/a/nbgHMIFLWAlwG3LB.svg)](https://asciinema.org/a/nbgHMIFLWAlwG3LB)
+
 ## Features
 
 - **Auto-detection** — scans for `.AppImage` files and registers them in a CSV registry
