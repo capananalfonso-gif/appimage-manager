@@ -309,6 +309,13 @@ def extract_metadata_for_records(apps_dir, records, cfg, force=False):
         if not appimage.exists():
             continue
 
+        # Ensure executable before extraction
+        if not os.access(appimage, os.X_OK):
+            try:
+                appimage.chmod(appimage.stat().st_mode | 0o111)
+            except OSError:
+                pass
+
         sys.stdout.write(f"  Extracting {rec['id']}...")
         sys.stdout.flush()
         meta = extract_metadata(appimage, rec["id"], icons_dir)
