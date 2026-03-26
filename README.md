@@ -68,9 +68,11 @@ appimage-manager.py --apps-dir ~/Applications list  # Custom directory
 5. LAUNCHER  Apps appear in COSMIC / GNOME / KDE with proper icons + dock support
 ```
 
-**Updating an app:** Drop the new `.AppImage` version, delete the old one. The script re-links automatically.
+**Updating an app:** Drop the new `.AppImage` version. The script detects the highest version number and re-links the symlink automatically. You can delete the old version whenever you like — the script only tracks the latest.
 
-**Removing an app:** Delete the `.AppImage` file. The script marks it as `removed`, cleans up the symlink, `.desktop` file, and icon from the hicolor theme. The CSV entry is preserved as history.
+**Multiple versions:** If multiple versions of the same app exist in the directory, the one with the highest version number is used (mtime as tiebreaker). Old versions are not deleted automatically — that's up to you.
+
+**Removing an app:** Delete all `.AppImage` files for that app. The script marks it as `removed`, cleans up the symlink, `.desktop` file, and icon from the hicolor theme. The CSV entry is preserved as history.
 
 ## Configuration
 
