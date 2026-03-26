@@ -1,0 +1,18 @@
+# AppImage files (user data, not part of the tool)
+*.AppImage
+*.appimage
+
+# Registry and runtime data
+appimages.csv
+appimages.lock
+appimages.tmp
+icons/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# OS
+.DS_Store
+Thumbs.db
