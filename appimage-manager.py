@@ -151,14 +151,26 @@ def _is_safe_path(path, root):
 
 
 def _safe_copy(src, dest, root):
-    """Copy src to dest only if src is safely inside root."""
+    """Copy src to dest only if src is safely inside root.
+
+    If the source is actually SVG (regardless of extension), renames
+    dest to .svg so desktop launchers can render it correctly.
+    Returns the final destination path, or None on failure.
+    """
     if not _is_safe_path(src, root):
-        return False
+        return None
     try:
         shutil.copy2(src, dest)
-        return True
+        # Detect SVG masquerading as PNG
+        with open(dest, "rb") as f:
+            header = f.read(256)
+        if b"<svg" in header or b"<?xml" in header:
+            svg_dest = dest.with_suffix(".svg")
+            dest.rename(svg_dest)
+            return svg_dest
+        return dest
     except OSError:
-        return False
+        return None
 
 
 def _appimage_extract(appimage_path, pattern, tmpdir):
@@ -200,9 +212,7 @@ def _extract_best_hicolor(appimage_path, icon_name, icon_dest, tmpdir, sqroot):
         return None
 
     candidates.sort(key=lambda c: (c[0], c[1].suffix == ".png"), reverse=True)
-    if _safe_copy(candidates[0][1], icon_dest, sqroot):
-        return icon_dest
-    return None
+    return _safe_copy(candidates[0][1], icon_dest, sqroot)
 
 
 def _read_embedded_desktop(appimage_path, tmpdir, sqroot):
@@ -255,8 +265,7 @@ def extract_metadata(appimage_path, app_id, icons_dir):
             diricon = sqroot / ".DirIcon"
 
             if diricon.exists() and not diricon.is_symlink():
-                if _safe_copy(diricon, icon_dest, sqroot):
-                    icon_result = icon_dest
+                icon_result = _safe_copy(diricon, icon_dest, sqroot)
 
             elif diricon.is_symlink():
                 link_target = os.readlink(diricon)
@@ -264,8 +273,7 @@ def extract_metadata(appimage_path, app_id, icons_dir):
                 resolved = (sqroot / link_target).resolve()
                 if _is_safe_path(resolved, sqroot):
                     if resolved.exists() and resolved.is_file():
-                        if _safe_copy(resolved, icon_dest, sqroot):
-                            icon_result = icon_dest
+                        icon_result = _safe_copy(resolved, icon_dest, sqroot)
                     # Step 3: hicolor fallback
                     elif "hicolor" in link_target:
                         icon_name = Path(link_target).stem
@@ -279,8 +287,7 @@ def extract_metadata(appimage_path, app_id, icons_dir):
             _appimage_extract(appimage_path, f"{icon_name}.png", tmpdir)
             root_icon = sqroot / f"{icon_name}.png"
             if root_icon.exists() and root_icon.is_file():
-                if _safe_copy(root_icon, icon_dest, sqroot):
-                    icon_result = icon_dest
+                icon_result = _safe_copy(root_icon, icon_dest, sqroot)
             if not icon_result:
                 icon_result = _extract_best_hicolor(
                     appimage_path, icon_name, icon_dest, tmpdir, sqroot,
@@ -300,8 +307,10 @@ def extract_metadata_for_records(apps_dir, records, cfg, force=False):
     for rec in records:
         if rec["status"] == "removed" and not force:
             continue
-        icon_path = icons_dir / f"{rec['id']}.png"
-        has_icon = icon_path.exists() and not force
+        has_icon = (
+            (icons_dir / f"{rec['id']}.png").exists()
+            or (icons_dir / f"{rec['id']}.svg").exists()
+        ) and not force
         has_categories = appimage_tag in rec.get("categories", "") and not force
         if has_icon and has_categories:
             continue
